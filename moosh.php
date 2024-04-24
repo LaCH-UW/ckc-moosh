@@ -75,7 +75,7 @@ if ($app_options->has('moodle-path')) {
 
 putenv('MOODLE_DIR='.$top_dir);
 
-$errors_lib = $moosh_dir . '/includes/moodle/clilib_sub.php';
+$errors_lib = $moosh_dir . '/includes/moodle/lib/clilib_sub.php';
 
 if (file_exists($top_dir . '/lib/clilib.php')) {
     $errors_lib = $top_dir . '/lib/clilib.php';
