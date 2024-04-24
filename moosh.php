@@ -44,7 +44,6 @@ $loader->add('DiffMatchPatch\\', $moosh_dir . '/vendor/yetanotherape/diff-match-
 $options = array('debug' => true, 'optimizations' => 0);
 
 require_once $moosh_dir . '/includes/functions.php';
-require_once $moosh_dir . '/includes/default_options.php';
 
 use GetOptionKit\ContinuousOptionParser;
 use GetOptionKit\OptionCollection;
@@ -191,6 +190,8 @@ try {
 while (!$parser->isEnd()) {
     $arguments[] = $parser->advance();
 }
+
+require_once $moosh_dir . '/includes/default_options.php';
 
 // Read config file if available.
 $moodlerc = null;

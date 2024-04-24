@@ -2,8 +2,8 @@
 /**
  * moosh - Moodle Shell
  *
- * @copyright  2012 onwards Tomasz Muras
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2012 onwards Tomasz Muras
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 //used in the code templates as default author
@@ -17,7 +17,7 @@ $defaultOptions['user']['lastname'] = '%s';
 $defaultOptions['user']['password'] = "a";
 $defaultOptions['user']['email'] = "%s@moodle.org";
 $defaultOptions['user']['country'] = 'PL';
-$defaultOptions['user']['city'] = 'Szczecin'; //my home city - why not !? ;)
+$defaultOptions['user']['city'] = 'Warsaw'; //my home city - why not !? ;)
 
 $defaultOptions['role']['name'] = '%s';
 $defaultOptions['role']['description'] = '%s';
@@ -34,3 +34,7 @@ $defaultOptions['course']['role'] = 'student';
 //use xdotool to automate some of the tasks
 $defaultOptions['global']['xdotool'] = false;
 $defaultOptions['global']['browser_string'] = 'Mozilla Firefox';
+
+$defaultOptions['theme-settings-export']['outputdir'] = $_ENV['MOODLE_DIR'].DIRECTORY_SEPARATOR.'config-backup'.DIRECTORY_SEPARATOR.'themes';
+$defaultOptions['role-export']['outputdir'] = $_ENV['MOODLE_DIR'].DIRECTORY_SEPARATOR.'config-backup'.DIRECTORY_SEPARATOR.'roles';
+$defaultOptions['category-export']['outputdir'] = $_ENV['MOODLE_DIR'].DIRECTORY_SEPARATOR.'config-backup'.DIRECTORY_SEPARATOR.'categories';

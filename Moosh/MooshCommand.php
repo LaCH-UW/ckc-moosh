@@ -2,8 +2,8 @@
 /**
  * moosh - Moodle Shell
  *
- * @copyright  2012 onwards Tomasz Muras
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2012 onwards Tomasz Muras
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace Moosh;
@@ -20,7 +20,8 @@ define('ARG_GENERIC', 0);
  */
 define('ARG_EXISTING_FILENAME', 1);
 
-class MooshCommand {
+class MooshCommand
+{
 
     /**
      * @var int Do not include config.php at all
@@ -153,18 +154,21 @@ class MooshCommand {
      */
     public $defaults;
 
-    public function __construct($name, $group = null) {
+    public function __construct($name, $group = null)
+    {
         $this->spec = new \GetOptionKit\OptionCollection();
         $this->addOption('h|help', 'help information');
         $this->name = $name;
         $this->group = $group;
     }
 
-    public function setPluginInfo($pluginInfo) {
+    public function setPluginInfo($pluginInfo)
+    {
         $this->pluginInfo = $pluginInfo;
     }
 
-    public function getName() {
+    public function getName()
+    {
         if ($this->group) {
             return $this->group . '-' . $this->name;
         } else {
@@ -177,7 +181,8 @@ class MooshCommand {
      *
      * @param string $name
      */
-    public function addArgument($name, $type = ARG_GENERIC) {
+    public function addArgument($name, $type = ARG_GENERIC)
+    {
         $this->minArguments++;
         $this->maxArguments++;
         $this->argumentNames[] = $name;
@@ -198,7 +203,8 @@ class MooshCommand {
 
     }
 
-    public function addOption($optionSpec, $description = null, $default = null) {
+    public function addOption($optionSpec, $description = null, $default = null)
+    {
         $option = $this->spec->add($optionSpec, $description);
         if (!$option->long) {
             die("Provide a long option for '$optionSpec'");
@@ -206,7 +212,8 @@ class MooshCommand {
         $this->options[$option->long] = $default;
     }
 
-    public function processOptions($defaults) {
+    public function processOptions($defaults)
+    {
         foreach ($this->options as $k => $default) {
             if ($this->verbose) {
                 echo "Processing command option '$k''\n";
@@ -242,7 +249,8 @@ class MooshCommand {
     /**
      * Make the special replacements of %s in the options
      */
-    public function expandOptions() {
+    public function expandOptions()
+    {
         //first copy the options
         $this->expandedOptions = $this->finalOptions;
 
@@ -266,7 +274,8 @@ class MooshCommand {
     /**
      * Make the special replacements of %s in the options with custom list of arguments
      */
-    public function expandOptionsManually($replacements) {
+    public function expandOptionsManually($replacements)
+    {
         //first copy the options
         $this->expandedOptions = $this->finalOptions;
 
@@ -286,7 +295,8 @@ class MooshCommand {
         }
     }
 
-    public function setArguments($arguments) {
+    public function setArguments($arguments)
+    {
         if (count($arguments) < $this->minArguments) {
             echo "Not enough arguments provided. Please specify:\n";
             echo implode(' ', $this->argumentNames);
@@ -307,11 +317,13 @@ class MooshCommand {
      *
      * @return string
      */
-    protected function onErrorHelp() {
+    protected function onErrorHelp()
+    {
         return '';
     }
 
-    public function setParsedOptions($parsedOptions) {
+    public function setParsedOptions($parsedOptions)
+    {
         $this->parsedOptions = $parsedOptions;
 
         //early detect if -h is given, display help and finish processing
@@ -321,7 +333,8 @@ class MooshCommand {
         }
     }
 
-    public function status() {
+    public function status()
+    {
         //print my name & group
         echo "Command: {$this->name} ($this->group)\n";
 
@@ -336,7 +349,8 @@ class MooshCommand {
         echo "\t" . implode(' ', $this->arguments) . "\n";
     }
 
-    public function printOptions() {
+    public function printOptions()
+    {
         echo '*** ' . $this->getName() . " ***\n";
         echo "OPTIONS:\n";
         $printer = new \GetOptionKit\OptionPrinter\ConsoleOptionPrinter;
@@ -350,7 +364,8 @@ class MooshCommand {
     /**
      * Can be overwritten by child classes to provide custom description.
      */
-    protected function getArgumentsHelp() {
+    protected function getArgumentsHelp()
+    {
         if (!count($this->argumentNames)) {
             return '';
         }
@@ -370,7 +385,8 @@ class MooshCommand {
      *
      * @return int
      */
-    public function bootstrapLevel() {
+    public function bootstrapLevel()
+    {
         return self::$BOOTSTRAP_FULL;
     }
 
@@ -379,14 +395,16 @@ class MooshCommand {
      *
      * @return int
      */
-    public function requireHomeWriteable() {
+    public function requireHomeWriteable()
+    {
         return false;
     }
 
     /**
      * Loads temporary session information from the temp file.
      */
-    protected function loadSession() {
+    protected function loadSession()
+    {
         $tmpFile = $this->defaults['global']['tmpfile'];
         if (!file_exists($tmpFile)) {
             $this->session = array();
@@ -399,12 +417,14 @@ class MooshCommand {
     /**
      * Saves session information to the temp file.
      */
-    protected function saveSession() {
+    protected function saveSession()
+    {
         $tmpFile = $this->defaults['global']['tmpfile'];
         file_put_contents($tmpFile, serialize($this->session));
     }
 
-    protected function getLangCategory() {
+    protected function getLangCategory()
+    {
         if ($this->pluginInfo['type'] == 'mod' || $this->pluginInfo['type'] == 'unknown') {
             $langCategory = $this->pluginInfo['name'];
         } else {
@@ -414,7 +434,8 @@ class MooshCommand {
         return $langCategory;
     }
 
-    public function checkPathArg($name) {
+    public function checkPathArg($name)
+    {
         $filepath = '';
         if ($name[0] == '/') {
             $filepath = $name;
@@ -432,7 +453,8 @@ class MooshCommand {
         return $filepath;
     }
 
-    public function checkFileArg($name) {
+    public function checkFileArg($name)
+    {
         $filepath = $this->checkPathArg($name);
         if (!is_file($filepath)) {
             cli_error("'$filepath' is not a file");
@@ -444,7 +466,8 @@ class MooshCommand {
         return $filepath;
     }
 
-    public function checkDirArg($name) {
+    public function checkDirArg($name)
+    {
         $filepath = $this->checkPathArg($name);
         if (!is_dir($filepath)) {
             cli_error("'$filepath' is not a directory");
@@ -452,7 +475,8 @@ class MooshCommand {
         return $filepath;
     }
 
-    protected function display($data, $json = false, $humanreadable=true) {
+    protected function display($data, $json = false, $humanreadable=true)
+    {
         if ($json) {
             echo json_encode($data);
             return;
