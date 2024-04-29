@@ -38,3 +38,4 @@ $defaultOptions['global']['browser_string'] = 'Mozilla Firefox';
 $defaultOptions['theme-settings-export']['outputdir'] = $_ENV['MOODLE_DIR'].DIRECTORY_SEPARATOR.'config-backup'.DIRECTORY_SEPARATOR.'themes';
 $defaultOptions['role-export']['outputdir'] = $_ENV['MOODLE_DIR'].DIRECTORY_SEPARATOR.'config-backup'.DIRECTORY_SEPARATOR.'roles';
 $defaultOptions['category-export']['outputdir'] = $_ENV['MOODLE_DIR'].DIRECTORY_SEPARATOR.'config-backup'.DIRECTORY_SEPARATOR.'categories';
+$defaultOptions['config-plugin-export']['outputdir'] = $_ENV['MOODLE_DIR'].DIRECTORY_SEPARATOR.'config-backup'.DIRECTORY_SEPARATOR.'plugins';

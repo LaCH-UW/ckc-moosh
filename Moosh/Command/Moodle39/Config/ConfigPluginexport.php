@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Exports configuration of plugin to .xml
  * moosh config-plugin-export [-o, --outputdir] <component>
@@ -13,11 +14,13 @@
  */
 
 namespace Moosh\Command\Moodle39\Config;
-use Moosh\MooshCommand;
+
 use PharData;
 use DOMDocument;
+
+use Moosh\MooshCommand;
+
 use \context_system;
-use DateTime;
 
 class ConfigPluginexport extends MooshCommand
 {
@@ -37,38 +40,33 @@ class ConfigPluginexport extends MooshCommand
         global $CFG;
         global $DB;
 
-        require_once($CFG->dirroot.'/lib/classes/plugin_manager.php');
+        require_once($CFG->dirroot . '/lib/classes/plugin_manager.php');
 
         // Init vars
         $componenttoexport = null;
         $pluginmanager = \core_plugin_manager::instance();
         $time = time();
-
+        $outputdir = $this->cwd;
 
         // Validate output dir
-        if ($this->parsedOptions->has('outputdir')) {
-            $outputdir = rtrim($this->parsedOptions['outputdir']->value, '/');
+        if (false === empty($this->finalOptions['outputdir'])) {
+            $outputdir = rtrim($this->finalOptions['outputdir'], '/');
 
-            if (substr($outputdir, 0, 2) == '..'){
+            if (substr($outputdir, 0, 2) === '..') {
                 $outputdir = $this->cwd . '/' . $outputdir;
+            } else if ($outputdir[0] === '.') {
+                $outputdir = $this->cwd . substr($outputdir, 1);
             }
-            else {
-                if ($outputdir[0] == '.'){
-                    $outputdir = $this->cwd . substr($outputdir, 1);
-                }
+
+            if (false === file_exists($outputdir)) {
+                mkdir($outputdir, 0760);
             }
-        }
-        else {
-            $outputdir = $this->cwd;
         }
 
-        if (is_dir($outputdir)){
-            if (!is_writable($outputdir)) {
-                cli_error("Output directory $outputdir is not writable \n");
-            }
-        }
-        else{
+        if (false === is_dir($outputdir)) {
             cli_error("$outputdir is not a directory or doesn't exist \n");
+        } else if (false === is_writable($outputdir)) {
+            cli_error("Output directory $outputdir is not writable \n");
         }
 
         //get name of plugin from user
@@ -83,12 +81,16 @@ class ConfigPluginexport extends MooshCommand
         //check if plugin exist, set correct name
         try {
             $pluginmanager->plugin_name($pluginname);
-        }
-        catch (\Exception $e) {
-            cli_error("Cought exception: " . $e->getMessage() . " \n".
+        } catch (\Exception $e) {
+            cli_error("Cought exception: " . $e->getMessage() . " \n" .
                 "Not found plugin: $pluginname");
         }
 
+        $outputdir .= DIRECTORY_SEPARATOR.$pluginname;
+
+        if (false === file_exists($outputdir)) {
+            mkdir($outputdir, 0760);
+        }
         // Load plugin settings
         $config = get_config($pluginname);
 
@@ -99,83 +101,82 @@ class ConfigPluginexport extends MooshCommand
         $fs = get_file_storage();
 
         $plugindatafolder = $outputdir . '/' . $pluginname . '_data_' . $time;
+
         if (!file_exists($plugindatafolder)) {
-            mkdir($plugindatafolder, 0777, true);
+            mkdir($plugindatafolder, 0760, true);
         }
 
         $serialize = serialize($files);
         file_put_contents($plugindatafolder . '/files.json', $serialize);
 
-        foreach ($files as &$file){
-            //print_r($file);
-
+        foreach ($files as &$file) {
             $newfile = $fs->get_file_by_hash($file->pathnamehash);
 
             // Read contents
-            if ($newfile) {
-                $filelocation = $plugindatafolder . '/' . $file->filename;
-                $newfile->copy_content_to($filelocation);
-                echo "File $file->filename saved in $filelocation\n";
-            }
-            else {
+            if (false === $newfile) {
                 cli_error("File doesn't exist\n");
             }
+
+            $filelocation = $plugindatafolder . '/' . $file->filename;
+            $newfile->copy_content_to($filelocation);
+
+            echo "File $file->filename saved in $filelocation\n";
         }
 
         // make and save XML
-        if (!empty($config)) {
-
-            $tarname = "{$outputdir}/{$pluginname}_config_{$time}.tar";
-            $phar = new PharData($tarname);
-
-            $dom = new DOMDocument('1.0', 'utf-8');
-            $root = $dom->createElement('config');
-            $root->setAttribute('plugin', $pluginname);
-            if (isset($config->version)) {
-                $root->setAttribute('version', $config->version);
-            }
-
-            $dom->appendChild($root);
-
-            foreach ($config as $settingname => $settingvalue) {
-                if ($settingname == 'version') continue;
-
-                $element = $dom->createElement('setting');
-                $element->appendChild($dom->createTextNode($settingvalue));
-                $element->setAttribute('name', $settingname);
-
-                if ($settingvalue && $settingvalue[0] == '/' && strpos($settingvalue, '.') !== FALSE) {
-
-                    $fs = get_file_storage();
-                    if ($files = $fs->get_area_files(context_system::instance()->id, $pluginname, $settingname, $settingvalue)) {
-                        foreach ($files as $f) {
-                            if (!$f->is_directory()) {
-                                $fh = $f->get_content_file_handle();
-
-                                $meta = stream_get_meta_data($fh);
-                                $uriparts = explode('/', $meta['uri']);
-                                $hash = array_pop($uriparts);
-
-                                $phar->addFile($meta['uri'], $hash);
-                                $element->setAttribute('file', $hash);
-                                $root->appendChild($element);
-                            }
-                        }
-                    }
-                } else {
-                    $root->appendChild($element);
-                }
-            }
-
-            $xmlfilename = "{$pluginname}_config_{$time}.xml";
-            $outputxml = "{$outputdir}/{$xmlfilename}";
-
-            $dom->save($outputxml);
-            echo "Config exported to $outputxml\n";
-            exit(0);
-        }
-        else {
+        if (empty($config) === true) {
             cli_error("No config to export \n");
         }
+
+        $tarname = "{$outputdir}/{$pluginname}_config_{$time}.tar";
+        $phar = new PharData($tarname);
+
+        $dom = new DOMDocument('1.0', 'utf-8');
+        $root = $dom->createElement('config');
+        $root->setAttribute('plugin', $pluginname);
+
+        if (isset($config->version)) {
+            $root->setAttribute('version', $config->version);
+        }
+
+        $dom->appendChild($root);
+
+        foreach ($config as $settingname => $settingvalue) {
+            if ($settingname == 'version') continue;
+
+            $element = $dom->createElement('setting');
+            $element->appendChild($dom->createTextNode($settingvalue));
+            $element->setAttribute('name', $settingname);
+
+            if ($settingvalue && $settingvalue[0] == '/' && strpos($settingvalue, '.') !== FALSE) {
+                $fs = get_file_storage();
+
+                if ($files = $fs->get_area_files(context_system::instance()->id, $pluginname, $settingname, $settingvalue)) {
+                    foreach ($files as $f) {
+                        if (!$f->is_directory()) {
+                            $fh = $f->get_content_file_handle();
+
+                            $meta = stream_get_meta_data($fh);
+                            $uriparts = explode('/', $meta['uri']);
+                            $hash = array_pop($uriparts);
+
+                            $phar->addFile($meta['uri'], $hash);
+                            $element->setAttribute('file', $hash);
+                            $root->appendChild($element);
+                        }
+                    }
+                }
+            } else {
+                $root->appendChild($element);
+            }
+        }
+
+        $xmlfilename = "{$pluginname}_config_{$time}.xml";
+        $outputxml = "{$outputdir}/{$xmlfilename}";
+
+        $dom->save($outputxml);
+
+        echo "Config exported to $outputxml\n";
+        exit(0);
     }
 }

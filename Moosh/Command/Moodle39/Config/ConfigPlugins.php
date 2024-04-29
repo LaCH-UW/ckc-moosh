@@ -19,18 +19,21 @@ class ConfigPlugins extends MooshCommand
 
     public function execute()
     {
-        global $CFG, $DB;
+        global $DB;
+
+        $sql = 'SELECT plugin FROM {config_plugins} GROUP BY plugin ORDER BY plugin ASC';
+        $parameters = [];
 
         if (isset($this->arguments[0])) {
-            $rows = $DB->get_records_sql(
-                'SELECT plugin FROM {config_plugins}
+            $sql = 'SELECT plugin FROM {config_plugins}
                   WHERE ' . $DB->sql_like('plugin', ':plugin', false) . '
                   GROUP BY plugin
-                  ORDER BY plugin ASC',
-                  array('plugin' => '%'.$this->arguments[0].'%'));
-        } else {
-            $rows = $DB->get_records_sql('SELECT plugin FROM {config_plugins} GROUP BY plugin ORDER BY plugin ASC');
+                  ORDER BY plugin ASC';
+            $parameters = ['plugin' => '%'.$this->arguments[0].'%'];
         }
+
+        $rows = $DB->get_records_sql($sql, $parameters);
+
         foreach($rows as $row) {
             echo $row->plugin . "\n";
         }

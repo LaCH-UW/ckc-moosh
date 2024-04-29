@@ -43,6 +43,7 @@ class SettingsExport extends MooshCommand
 
         //Validate theme
         $availablethemes = core_plugin_manager::instance()->get_plugins_of_type('theme');
+
         if (!empty($availablethemes)) {
             $availablethemenames = array_keys($availablethemes);
         }

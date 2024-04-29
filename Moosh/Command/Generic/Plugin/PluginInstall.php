@@ -9,6 +9,11 @@
  */
 
 namespace Moosh\Command\Generic\Plugin;
+
+use Exception;
+
+use core_component;
+
 use Moosh\MooshCommand;
 
 class PluginInstall extends MooshCommand
@@ -122,7 +127,7 @@ class PluginInstall extends MooshCommand
         global $CFG;
 
         if ($this->moodlerelease >= 2.6) {
-            $types = \core_component::get_plugin_types();
+            $types = core_component::get_plugin_types();
         } else if ($this->moodlerelease >= 2.0) {
             $types = get_plugin_types();
         } else {
